@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.SearchUIController">
+    <stylesheets>
+        <URL value="@searchui.css" />
+    </stylesheets>
+   <children>
+      <TextField fx:id="searchText" layoutX="14.0" layoutY="14.0" />
+      <Button fx:id="searchButton" layoutX="451.0" layoutY="14.0" mnemonicParsing="false" onAction="#search" text="Search" />
+      <ImageView fx:id="imageDisplay" fitHeight="128.0" fitWidth="128.0" layoutX="44.0" layoutY="136.0" pickOnBounds="true" preserveRatio="true" />
+      <Label fx:id="textDisplay" layoutX="201.0" layoutY="136.0" text="ResultName" />
+      <ComboBox fx:id="oneSelection" layoutX="225.0" layoutY="14.0" prefWidth="150.0" />
+   </children>
+</AnchorPane>
