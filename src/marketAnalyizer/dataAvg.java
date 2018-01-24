@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.time.Instant;
+import java.util.Calendar;
+
 /**
  *
  * @author Jon
@@ -22,7 +25,8 @@ public class dataAvg
     int num = 0;
     int den = 0;
     int avg = 0;
-    Date time;
+    Calendar mycalendar = Calendar.getInstance();
+    Date time = mycalendar.getTime();
     
     public dataAvg(List<record> datain, String quality) //sort by only quality
     {
@@ -59,21 +63,49 @@ public class dataAvg
             break;       
         }
         
-        this.avg = num / den;
-    }
-    
-    public dataAvg(List<record> datain, Date timeHistory)
-    {
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+        System.out.println(time);
         
     }
     
-    public dataAvg(List<record> datain, Date timeHistory, Date timeSort) //timeHistory is the extent (7 days, 14 days, 30 days, etc. timeSort is sorting by day of week, hour of day etc.
+    public dataAvg(List<record> datain, int timeHistory) //timeHistory is in days
+    {
+        Calendar recordCal = Calendar.getInstance();
+        mycalendar.add(Calendar.DAY_OF_YEAR, -1 * timeHistory);
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if (recordCal.after(mycalendar))
+            {
+                num += r.price;
+                den++;
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+    
+    public dataAvg(List<record> datain, int timeHistory, Date timeSort) //timeHistory is the extent (7 days, 14 days, 30 days, etc. timeSort is sorting by day of week, hour of day etc.
     {
         //DO WITHOUT timeSort FIRST
+        //Made into different class
     }
     
     public int toint()
     {
         return avg;
     }
+    
 }

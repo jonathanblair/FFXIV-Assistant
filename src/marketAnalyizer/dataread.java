@@ -17,6 +17,8 @@ import java.util.Scanner;
 import java.io.File;
 import java.util.Date;
 
+//TO DO: STUFF WITH TIME ZONES FOR DATA
+
 
 
 /**
@@ -43,7 +45,7 @@ public class dataread {
             }
             for (record r : dataArray)
             {
-                System.out.println(r);
+                System.out.println(r + " " + r.time);
             }
         } catch (IOException e)
         {
@@ -60,6 +62,11 @@ public class dataread {
         System.out.println(myavg.avg);
         System.out.println(myavg.num);
         System.out.println(myavg.den);
+        dataAvg testavg = new dataAvg(dataArray, 7);
+        System.out.println(testavg.mycalendar.getTime());
+        System.out.println(testavg.avg);
+        System.out.println(testavg.num);
+        System.out.println(testavg.den);
     }
 }
 
