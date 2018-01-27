@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Scanner;
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 
 //TO DO: STUFF WITH TIME ZONES FOR DATA
@@ -59,14 +60,13 @@ public class dataread {
         //System.out.println(dataArray.get(1).hq);
         
         dataAvg myavg = new dataAvg(dataArray, "all");
-        System.out.println(myavg.avg);
-        System.out.println(myavg.num);
-        System.out.println(myavg.den);
         dataAvg testavg = new dataAvg(dataArray, 7);
         System.out.println(testavg.mycalendar.getTime());
-        System.out.println(testavg.avg);
-        System.out.println(testavg.num);
-        System.out.println(testavg.den);
+        dataAvgMonth testmonth = new dataAvgMonth(dataArray, "january");
+        System.out.println(testmonth.avg);
+        System.out.println(testmonth.cal.MONTH);
+        System.out.println(testmonth.numMonth);
+        System.out.println(testmonth.time);
     }
 }
 
@@ -96,31 +96,467 @@ class record
     public String toString()
     {
         return "record: sold " + quantity + (hq ? " hq":"") + " at " + price + " ea";
-    }
-    
+    }   
 }
 
-class average //attempt to use data
+class dataAvg 
 {
-    int num = 0;//will be the total
-    int den = 0;// will be number of entries, as in average = total/)number of items)
+    int num = 0;
+    int den = 0;
     int avg = 0;
+    Calendar mycalendar = Calendar.getInstance();
+    Date time = mycalendar.getTime();
     
-    public average(List<record> input)
+    public dataAvg(List<record> datain, String quality) //sort by only quality
     {
-        for (record r : input)
+        switch (quality) //sorts based on quality
         {
-            num += input.get(0).price; //This is only going to use the first one, but this was a test anyway and I didn't realize that then
-            den++;
+        case "hq": //sort by high quality only
+            for (record r : datain)
+            {
+                if (r.hq == true)
+                {
+                    num += r.price;
+                    den++;
+                }
+            }
+            break;
+            
+        case "nq": //sort by normal quality only
+            for (record r : datain)
+            {
+                if (r.hq == false)
+                {
+                    num += r.price;
+                    den++;
+                }
+            }
+            break;
+                
+        case "all": //ignore quality
+            for (record r : datain)
+            {
+                num += r.price;
+                den++;
+            }
+            break;       
         }
         
-        this.avg = num / den;
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+        System.out.println(time);
         
+    }
+    
+    public dataAvg(List<record> datain, int timeHistory) //timeHistory is in days
+    {
+        Calendar recordCal = Calendar.getInstance();
+        mycalendar.add(Calendar.DAY_OF_YEAR, -1 * timeHistory);
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if (recordCal.after(mycalendar))
+            {
+                num += r.price;
+                den++;
+            }
+        }
         
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+    
+    public dataAvg(List<record> datain, int timeHistory, Date timeSort) //timeHistory is the extent (7 days, 14 days, 30 days, etc. timeSort is sorting by day of week, hour of day etc.
+    {
+        //DO WITHOUT timeSort FIRST
+        //Made into different class
     }
     
     public int toint()
     {
         return avg;
+    }
+    
+}
+
+
+class dataAvgWeekday
+{
+    int num = 0;
+    int den = 0;
+    int avg = 0;
+    int weekNumDay = 1;
+    Calendar cal = Calendar.getInstance();
+    Date time = cal.getTime();
+    
+    public dataAvgWeekday(List<record> datain, String weekday)
+    {
+        Calendar recordCal = Calendar.getInstance();
+        weekStrToInt week = new weekStrToInt(weekday);
+        weekNumDay = week.number;
+//        System.out.println(recordCal.get(Calendar.DAY_OF_WEEK));        
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if (recordCal.get(Calendar.DAY_OF_WEEK) == weekNumDay)
+            {
+                num += r.price;
+                den++;
+                System.out.println(r + " " + r.time);
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+    
+    public dataAvgWeekday(List<record> datain, String weekday, int timeHistory)
+    {
+        Calendar recordCal = Calendar.getInstance();
+        weekStrToInt week = new weekStrToInt(weekday);
+        weekNumDay = week.number;
+        cal.add(Calendar.DAY_OF_YEAR, -1 * timeHistory);
+        
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if ((recordCal.get(Calendar.DAY_OF_WEEK) == weekNumDay) && (recordCal.after(cal)))
+            {
+                num += r.price;
+                den++;
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+    
+    public dataAvgWeekday(List<record> datain, String weekday, String quality)
+    {
+        Calendar recordCal = Calendar.getInstance();
+        weekStrToInt week = new weekStrToInt(weekday);
+        weekNumDay = week.number;
+        
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if (recordCal.get(Calendar.DAY_OF_WEEK) == weekNumDay)
+            {
+                switch (quality)
+                {
+                    case "hq": //high quality and day of week only
+                    {
+                        if (r.hq == true)
+                        {
+                            num += r.price;
+                            den++;
+                        }
+                        break;
+                    }
+                    case "nq": //normal quality and day of week only
+                    {
+                        if (r.hq == false)
+                        {
+                            num += r.price;
+                            den++;
+                        }
+                        break;
+                    }
+                    case "all": //any quality and day of week only
+                    {
+                        num += r.price;
+                        den++;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+    
+    public dataAvgWeekday(List<record> datain, String weekday, String quality, int timeHistory)
+    {
+        Calendar recordCal = Calendar.getInstance();
+        weekStrToInt week = new weekStrToInt(weekday);
+        weekNumDay = week.number;
+        cal.add(Calendar.DAY_OF_YEAR, -1 * timeHistory);
+        
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if ((recordCal.get(Calendar.DAY_OF_WEEK) == weekNumDay) && (recordCal.after(cal)))
+            {
+                switch (quality)
+                {
+                    case "hq": //high quality, day of week, and within past time period
+                    {
+                        if (r.hq == true)
+                        {
+                            num += r.price;
+                            den++;
+                        }
+                        break;
+                    }
+                    case "nq": //normal quality, day of week, and within past time period
+                    {
+                        if (r.hq == false)
+                        {
+                            num += r.price;
+                            den++;
+                        }
+                        break;
+                    }
+                    case "all":
+                    {
+                        num += r.price;
+                        den++;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+}
+
+class dataAvgMonth
+{
+    int num = 0;
+    int den = 0;
+    int avg = 0;
+    int numMonth = 1;
+    Calendar cal = Calendar.getInstance();
+    Date time = cal.getTime();
+    
+    public dataAvgMonth(List<record> datain, String month) //sort data by month only
+    {
+        Calendar recordCal = Calendar.getInstance();
+        monthToInt mti = new monthToInt(month);
+        numMonth = mti.number;
+        
+        for (record r: datain)
+        {
+            recordCal.setTime(r.time);
+            if (recordCal.get(Calendar.MONTH) == numMonth)
+            {
+                num += r.price;
+                den++;
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+    
+    public dataAvgMonth(List<record> datain, String month, String quality)
+    {
+        Calendar recordCal = Calendar.getInstance();
+        monthToInt mti = new monthToInt(month);
+        numMonth = mti.number;
+        
+        for (record r : datain)
+        {
+            recordCal.setTime(r.time);
+            if (recordCal.get(Calendar.MONTH) == numMonth)
+            {
+                switch (quality)
+                {
+                    case "hq":
+                    {
+                        if (r.hq == true)
+                        {
+                            num += r.price;
+                            den++;
+                        }
+                        break;
+                    }
+                    case "nq":
+                    {
+                        if (r.hq == false)
+                        {
+                            num += r.price;
+                            den++;
+                        }
+                        break;
+                    }
+                    case "all":
+                    {
+                        num += r.price;
+                        den++;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        if (den != 0)
+        {
+            this.avg = num / den;
+        } else
+        {
+            this.avg = 0;
+        }
+    }
+}
+
+class monthToInt
+{
+    int number = 1;
+    public monthToInt(String month)
+    {
+        switch (month)
+        {
+            case "january":
+            {
+                number = 1;
+                break;
+            }
+            case "february":
+            {
+                number = 2;
+                break;
+            }
+            case "march":
+            {
+                number = 3;
+                break;
+            }
+            case "april":
+            {
+                number = 4;
+                break;
+            }
+            case "may":
+            {
+                number = 5;
+                break;
+            }
+            case "june":
+            {
+                number = 6;
+                break;
+            }
+            case "july":
+            {
+                number = 7;
+                break;
+            }
+            case "august":
+            {
+                number = 8;
+                break;
+            }
+            case "september":
+            {
+                number = 9;
+                break;
+            }
+            case "october":
+            {
+                number = 10;
+                break;
+            }
+            case "november":
+            {
+                number = 11;
+                break;
+            }
+            case "december":
+            {
+                number = 12;
+                break;
+            }
+        }
+    }
+}
+
+class weekStrToInt
+{
+    int number = 1;
+    public weekStrToInt(String weekday)
+    {
+        switch (weekday)
+        {
+            case "sunday":
+            {
+                number = 1;
+                break;
+            }
+            case "monday":
+            {
+                number = 2;
+                break;
+            }
+            case "tuesday":
+            {
+                number = 3;
+                break;
+                
+            }
+            case "wednesday":
+            {
+                number = 4;
+                break;
+            }
+            case "thursday":
+            {
+                number = 5;
+                break;
+            }
+            case "friday":
+            {
+                number = 6;
+                break;
+            }
+            case "saturday":
+            {
+                number = 7;
+                break;
+            }
+        }
+    }
+    
+    public int toint()
+    {
+        return number;
     }
 }
